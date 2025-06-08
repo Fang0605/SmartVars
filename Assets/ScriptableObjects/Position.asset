@@ -9,11 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0b51552be58fc54ababde47a34dd644, type: 3}
-  m_Name: Health
+  m_Script: {fileID: 11500000, guid: 18db35f7884808246bd7926b06f95aaf, type: 3}
+  m_Name: Position
   m_EditorClassIdentifier: 
-  value: 10
-  defaultValue: 0
+  value: {x: 5, y: 2, z: 3}
+  defaultValue: {x: 0, y: 0, z: 0}
   OnValueChanged:
     m_PersistentCalls:
       m_Calls: []

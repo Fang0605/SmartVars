@@ -2,6 +2,7 @@
 using Mono.Cecil.Cil;
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using UnityEditor;
@@ -26,8 +27,9 @@ public class SmartReferenceDrawer : PropertyDrawer
         GUI.Box(boxRect, GUIContent.none);
 
         // Label
+        string resolvedLabel = $"{label.text} ({GetResolvedTypeName(property)})";
         Rect labelRect = new Rect(position.x + boxPadding, position.y + boxPadding, position.width, lineHeight);
-        EditorGUI.LabelField(labelRect, label);
+        EditorGUI.LabelField(labelRect, new GUIContent(resolvedLabel));
 
         // Fields layout
         Rect fieldRect = new Rect(labelRect.x, labelRect.y + lineHeight + spacing, labelRect.width, lineHeight);
@@ -75,6 +77,7 @@ public class SmartReferenceDrawer : PropertyDrawer
         return height + 8f; // padding
     }
 
+    private static Dictionary<Type, PropertyInfo> cachedValueProps = new();
     private string TryGetResolvedValue(SerializedProperty property)
     {
         SerializedProperty modeProp = property.FindPropertyRelative("mode");
@@ -109,16 +112,64 @@ public class SmartReferenceDrawer : PropertyDrawer
         UnityEngine.Object variableObj = variableProp.objectReferenceValue;
         if (variableObj == null) return "null";
 
-        var variableType = variableObj.GetType();
-        var valueProp = variableType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
+        Type variableType = variableObj.GetType();
+
+        if (!cachedValueProps.TryGetValue(variableType, out PropertyInfo valueProp))
+        {
+            valueProp = variableType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
+            cachedValueProps[variableType] = valueProp;
+        }
+
         if (valueProp != null)
         {
             object value = valueProp.GetValue(variableObj);
-            return value != null ? value.ToString() : "null";
+            return value?.ToString() ?? "null";
         }
 
         return "(Value not accessible)";
     }
+
+    private string GetResolvedTypeName(SerializedProperty property)
+    {
+        SerializedProperty modeProp = property.FindPropertyRelative("mode");
+        SerializedProperty inlineValueProp = property.FindPropertyRelative("inlineValue");
+        SerializedProperty variableProp = property.FindPropertyRelative("variable");
+
+        if ((ValueSourceMode)modeProp.enumValueIndex == ValueSourceMode.Inline)
+        {
+            return inlineValueProp.propertyType.ToString();
+        }
+
+        UnityEngine.Object variableObj = variableProp.objectReferenceValue;
+        if (variableObj == null)
+            return "null";
+
+        Type variableType = variableObj.GetType();
+
+        if (!cachedValueProps.TryGetValue(variableType, out PropertyInfo valueProp))
+        {
+            valueProp = variableType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
+            cachedValueProps[variableType] = valueProp;
+        }
+
+        string rawName = valueProp?.PropertyType.Name ?? "Unknown";
+
+        // Translate to friendly name
+        return friendlyTypeNames.TryGetValue(rawName, out string friendly)
+            ? friendly
+            : rawName;
+    }
+
+    private static readonly Dictionary<string, string> friendlyTypeNames = new()
+{
+    { "Single", "Float" },
+    { "Int32", "Int" },
+    { "Boolean", "Bool" },
+    { "String", "String" },
+    { "Vector2", "Vector2" },
+    { "Vector3", "Vector3" },
+    { "Object", "Object" }
+};
 }
 
 #endif

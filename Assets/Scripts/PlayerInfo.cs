@@ -6,4 +6,8 @@ public class PlayerInfo : MonoBehaviour
     [SerializeField] private SmartReference<float> playerHealth;
     [SerializeField] private SmartReference<int> playerLives;
     [SerializeField] private SmartReference<Vector3> playerPosition;
+
+    [SerializeField] private FloatVariable testFloat;
+    [SerializeField] private IntVariable testInt;
+    [SerializeField] private Vector3Variable testVector3;
 }

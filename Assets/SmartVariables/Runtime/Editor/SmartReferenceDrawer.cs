@@ -1,13 +1,15 @@
 ﻿#if UNITY_EDITOR
-using Mono.Cecil.Cil;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
+
+/// <summary>
+/// Custom drawer for SmartReference<T>. Displays a boxed field with value mode selection,
+/// inline or reference input, type info, and a live resolved value preview.
+/// </summary>
 [CustomPropertyDrawer(typeof(SmartReference<>), true)]
 public class SmartReferenceDrawer : PropertyDrawer
 {
@@ -37,12 +39,13 @@ public class SmartReferenceDrawer : PropertyDrawer
         Rect labelRect = new Rect(position.x + boxPadding, position.y + boxPadding, position.width, lineHeight);
         EditorGUI.LabelField(labelRect, new GUIContent(resolvedLabel));
 
-        // Fields layout
+        // Value mode dropdown
         Rect fieldRect = new Rect(labelRect.x, labelRect.y + lineHeight + spacing, labelRect.width, lineHeight);
         EditorGUI.PropertyField(fieldRect, modeProp, new GUIContent("Value Mode"));
 
         fieldRect.y += lineHeight + spacing;
 
+        // Inline or reference input
         if ((ValueSourceMode)modeProp.enumValueIndex == ValueSourceMode.Inline)
         {
             EditorGUI.PropertyField(fieldRect, inlineValueProp, new GUIContent("Inline Value"));
@@ -65,7 +68,6 @@ public class SmartReferenceDrawer : PropertyDrawer
 
         EditorGUI.EndProperty();
     }
-
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
     {
         SerializedProperty modeProp = property.FindPropertyRelative("mode");
@@ -84,6 +86,8 @@ public class SmartReferenceDrawer : PropertyDrawer
     }
 
     private static Dictionary<Type, PropertyInfo> cachedValueProps = new();
+
+
     private string TryGetResolvedValue(SerializedProperty property)
     {
         SerializedProperty modeProp = property.FindPropertyRelative("mode");
@@ -166,6 +170,9 @@ public class SmartReferenceDrawer : PropertyDrawer
             : rawName;
     }
 
+    /// <summary>
+    /// Maps raw .NET type names to user-friendly names for display and color lookup.
+    /// </summary>
     private static readonly Dictionary<string, string> friendlyTypeNames = new()
     {
         { "Single", "Float" },

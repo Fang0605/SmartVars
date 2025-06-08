@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+using System;
 using UnityEngine;
 
 [System.Serializable]
@@ -10,13 +10,22 @@ public class SmartReference<T>
 
     [SerializeField] private SmartVariable<T> variable;
 
+    [NonSerialized]
+    public Action<T> OnInlineValueChanged;
+
     public T Value
     {
         get => mode == ValueSourceMode.Inline? inlineValue : variable.Value;
         set
         {
             if(mode == ValueSourceMode.Inline)
-                inlineValue = value;
+            {
+                if(!Equals(inlineValue, value))
+                {
+                    inlineValue = value;
+                    OnInlineValueChanged?.Invoke(value);
+                }
+            }  
             else if(variable != null)
                 variable.Value = value;
         }

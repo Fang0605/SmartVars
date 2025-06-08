@@ -18,7 +18,7 @@ public abstract class SmartVariable<T> : ScriptableObject
             if(!EqualityComparer<T>.Default.Equals(this.value, value))
             {
                 this.value = value;
-                OnValueChanged.Invoke(this.value);
+                OnValueChanged?.Invoke(this.value);
             }
         }
     }

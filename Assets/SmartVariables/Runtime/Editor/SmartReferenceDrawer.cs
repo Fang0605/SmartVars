@@ -22,8 +22,14 @@ public class SmartReferenceDrawer : PropertyDrawer
         float lineHeight = EditorGUIUtility.singleLineHeight;
         float spacing = EditorGUIUtility.standardVerticalSpacing;
 
+        string friendlyType = GetResolvedTypeName(property);
+        Debug.Log($"Type key for color lookup: '{friendlyType}'");
+        Color boxColor = SmartVariablePreferences.GetColor(friendlyType);
+
         float boxPadding = 4f;
         Rect boxRect = new Rect(position.x, position.y, position.width, GetPropertyHeight(property, label));
+        // Draw background color (box)
+        EditorGUI.DrawRect(boxRect, boxColor * new Color(1f, 1f, 1f, 0.15f));// Transparent tint
         GUI.Box(boxRect, GUIContent.none);
 
         // Label
@@ -161,15 +167,15 @@ public class SmartReferenceDrawer : PropertyDrawer
     }
 
     private static readonly Dictionary<string, string> friendlyTypeNames = new()
-{
-    { "Single", "Float" },
-    { "Int32", "Int" },
-    { "Boolean", "Bool" },
-    { "String", "String" },
-    { "Vector2", "Vector2" },
-    { "Vector3", "Vector3" },
-    { "Object", "Object" }
-};
+    {
+        { "Single", "Float" },
+        { "Int32", "Int" },
+        { "Boolean", "Bool" },
+        { "String", "String" },
+        { "Vector2", "Vector2" },
+        { "Vector3", "Vector3" },
+        { "Object", "Object" }
+    };
 }
 
 #endif

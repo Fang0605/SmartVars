@@ -1,5 +1,9 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using Mono.Cecil.Cil;
+using System;
+using System.Buffers;
+using System.ComponentModel;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,32 +21,39 @@ public class SmartReferenceDrawer : PropertyDrawer
         float lineHeight = EditorGUIUtility.singleLineHeight;
         float spacing = EditorGUIUtility.standardVerticalSpacing;
 
+        float boxPadding = 4f;
+        Rect boxRect = new Rect(position.x, position.y, position.width, GetPropertyHeight(property, label));
+        GUI.Box(boxRect, GUIContent.none);
+
         // Label
-        Rect labelRect = new Rect(position.x, position.y, position.width, lineHeight);
+        Rect labelRect = new Rect(position.x + boxPadding, position.y + boxPadding, position.width, lineHeight);
         EditorGUI.LabelField(labelRect, label);
 
-        // Mode Dropdown
-        Rect modeRect = new Rect(position.x, position.y + lineHeight + spacing, position.width, lineHeight);
-        EditorGUI.PropertyField(modeRect, modeProp, new GUIContent("Value Mode"));
+        // Fields layout
+        Rect fieldRect = new Rect(labelRect.x, labelRect.y + lineHeight + spacing, labelRect.width, lineHeight);
+        EditorGUI.PropertyField(fieldRect, modeProp, new GUIContent("Value Mode"));
 
-        // Value Field
-        Rect valueRect = new Rect(position.x, modeRect.y + lineHeight + spacing, position.width, lineHeight);
+        fieldRect.y += lineHeight + spacing;
 
         if ((ValueSourceMode)modeProp.enumValueIndex == ValueSourceMode.Inline)
         {
-            EditorGUI.PropertyField(valueRect, inlineValueProp, new GUIContent("Inline Value"));
+            EditorGUI.PropertyField(fieldRect, inlineValueProp, new GUIContent("Inline Value"));
         }
         else
         {
-            EditorGUI.PropertyField(valueRect, variableProp, new GUIContent("Reference"));
+            EditorGUI.PropertyField(fieldRect, variableProp, new GUIContent("Reference"));
 
-            // Show warning if variable is null
             if (variableProp.objectReferenceValue == null)
             {
-                Rect warningRect = new Rect(position.x, valueRect.y + lineHeight + spacing, position.width, lineHeight);
-                EditorGUI.HelpBox(warningRect, "Reference is null!", MessageType.Warning);
+                fieldRect.y += lineHeight + spacing;
+                EditorGUI.HelpBox(fieldRect, "Reference is null!", MessageType.Warning);
             }
         }
+
+        //Resolved Value Preview
+        fieldRect.y += lineHeight + spacing;
+        string resolvedValue = TryGetResolvedValue(property);
+        EditorGUI.LabelField(fieldRect, $"🔎 Resolved Value: {resolvedValue}");
 
         EditorGUI.EndProperty();
     }
@@ -52,15 +63,61 @@ public class SmartReferenceDrawer : PropertyDrawer
         SerializedProperty modeProp = property.FindPropertyRelative("mode");
         SerializedProperty variableProp = property.FindPropertyRelative("variable");
 
-        float height = EditorGUIUtility.singleLineHeight * 3 + EditorGUIUtility.standardVerticalSpacing * 2;
-
+        float height = EditorGUIUtility.singleLineHeight * 4 + EditorGUIUtility.standardVerticalSpacing * 3;
         bool isReference = (ValueSourceMode)modeProp.enumValueIndex == ValueSourceMode.Reference;
         bool isNull = variableProp.objectReferenceValue == null;
 
         if (isReference && isNull)
+        {
             height += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+        }
 
-        return height;
+        return height + 8f; // padding
+    }
+
+    private string TryGetResolvedValue(SerializedProperty property)
+    {
+        SerializedProperty modeProp = property.FindPropertyRelative("mode");
+        SerializedProperty inlineValueProp = property.FindPropertyRelative("inlineValue");
+        SerializedProperty variableProp = property.FindPropertyRelative("variable");
+
+        // Inline Mode
+        if ((ValueSourceMode)modeProp.enumValueIndex == ValueSourceMode.Inline)
+        {
+            switch (inlineValueProp.propertyType)
+            {
+                case SerializedPropertyType.Integer:
+                    return inlineValueProp.intValue.ToString();
+                case SerializedPropertyType.Float:
+                    return inlineValueProp.floatValue.ToString("0.###");
+                case SerializedPropertyType.Boolean:
+                    return inlineValueProp.boolValue.ToString();
+                case SerializedPropertyType.String:
+                    return inlineValueProp.stringValue;
+                case SerializedPropertyType.Vector2:
+                    return inlineValueProp.vector2Value.ToString();
+                case SerializedPropertyType.Vector3:
+                    return inlineValueProp.vector3Value.ToString();
+                case SerializedPropertyType.ObjectReference:
+                    return inlineValueProp.objectReferenceValue ? inlineValueProp.objectReferenceValue.name : "null";
+                default:
+                    return $"({inlineValueProp.propertyType})";
+            }
+        }
+
+        // Reference Mode
+        UnityEngine.Object variableObj = variableProp.objectReferenceValue;
+        if (variableObj == null) return "null";
+
+        var variableType = variableObj.GetType();
+        var valueProp = variableType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
+        if (valueProp != null)
+        {
+            object value = valueProp.GetValue(variableObj);
+            return value != null ? value.ToString() : "null";
+        }
+
+        return "(Value not accessible)";
     }
 }
 

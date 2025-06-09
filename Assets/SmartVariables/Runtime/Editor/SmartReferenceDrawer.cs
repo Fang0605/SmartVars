@@ -48,11 +48,45 @@ public class SmartReferenceDrawer : PropertyDrawer
         // Inline or reference input
         if ((ValueSourceMode)modeProp.enumValueIndex == ValueSourceMode.Inline)
         {
-            SmartRangeAttribute range = fieldInfo.GetCustomAttribute<SmartRangeAttribute>();
+            var memberInfo = fieldInfo;
+            SmartRangeAttribute range = memberInfo.GetCustomAttribute<SmartRangeAttribute>();
+            SmartDynamicRangeAttribute smartRange = fieldInfo.GetCustomAttribute<SmartDynamicRangeAttribute>();
 
-            if (range != null && inlineValueProp.propertyType == SerializedPropertyType.Float)
+            float min = 0, max = 1;
+            bool useRange = false;
+
+
+            if (range != null)
             {
-                inlineValueProp.floatValue = EditorGUI.Slider(fieldRect, "Inline Value", inlineValueProp.floatValue, range.Min, range.Max);
+                min = range.Min;
+                max = range.Max;
+                useRange = true;
+            }
+            else if (smartRange != null)
+            {
+                // Resolve min/max from sibling fields in the target object
+                var target = property.serializedObject.targetObject;
+                var targetType = target.GetType();
+
+                FieldInfo minField = targetType.GetField(smartRange.MinField, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                FieldInfo maxField = targetType.GetField(smartRange.MaxField, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+                if (minField != null && maxField != null)
+                {
+                    min = Convert.ToSingle(minField.GetValue(target));
+                    max = Convert.ToSingle(maxField.GetValue(target));
+                    useRange = true;
+                }
+            }
+
+            // Draw slider if applicable
+            if (useRange && inlineValueProp.propertyType == SerializedPropertyType.Float)
+            {
+                inlineValueProp.floatValue = EditorGUI.Slider(fieldRect, "Inline Value", inlineValueProp.floatValue, min, max);
+            }
+            else if (useRange && inlineValueProp.propertyType == SerializedPropertyType.Integer)
+            {
+                inlineValueProp.intValue = EditorGUI.IntSlider(fieldRect, "Inline Value", inlineValueProp.intValue, (int)min, (int)max);
             }
             else
             {

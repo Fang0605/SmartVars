@@ -100,18 +100,33 @@ namespace SmartVars.Edtior
             else
             {
                 EditorGUI.PropertyField(fieldRect, variableProp, new GUIContent("Reference"));
+                fieldRect.y += lineHeight + spacing;
 
                 if (variableProp.objectReferenceValue == null)
                 {
-                    fieldRect.y += lineHeight + spacing;
                     EditorGUI.HelpBox(fieldRect, "Reference is null!", MessageType.Warning);
                 }
-            }
+                else
+                {
+                    // Get the serialized object of the referenced SmartVariable
+                    SerializedObject smartVarSO = new SerializedObject(variableProp.objectReferenceValue);
+                    SerializedProperty valueProp = smartVarSO.FindProperty("value");
 
-            //Resolved Value Preview
-            fieldRect.y += lineHeight + spacing;
-            string resolvedValue = TryGetResolvedValue(property);
-            EditorGUI.LabelField(fieldRect, $"🔎 Resolved Value: {resolvedValue}");
+                    if (valueProp != null)
+                    {
+                        EditorGUI.BeginChangeCheck();
+                        EditorGUI.PropertyField(fieldRect, valueProp, new GUIContent("Reference Value"));
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            smartVarSO.ApplyModifiedProperties();
+                        }
+                    }
+                    else
+                    {
+                        EditorGUI.HelpBox(fieldRect, "Value property not found.", MessageType.Warning);
+                    }
+                }
+            }
 
             EditorGUI.EndProperty();
         }
@@ -176,58 +191,6 @@ namespace SmartVars.Edtior
         }
 
         private static Dictionary<Type, PropertyInfo> cachedValueProps = new();
-
-
-        private string TryGetResolvedValue(SerializedProperty property)
-        {
-            SerializedProperty modeProp = property.FindPropertyRelative("mode");
-            SerializedProperty inlineValueProp = property.FindPropertyRelative("inlineValue");
-            SerializedProperty variableProp = property.FindPropertyRelative("variable");
-
-            // Inline Mode
-            if ((ValueSourceMode)modeProp.enumValueIndex == ValueSourceMode.Inline)
-            {
-                switch (inlineValueProp.propertyType)
-                {
-                    case SerializedPropertyType.Integer:
-                        return inlineValueProp.intValue.ToString();
-                    case SerializedPropertyType.Float:
-                        return inlineValueProp.floatValue.ToString("0.###");
-                    case SerializedPropertyType.Boolean:
-                        return inlineValueProp.boolValue.ToString();
-                    case SerializedPropertyType.String:
-                        return inlineValueProp.stringValue;
-                    case SerializedPropertyType.Vector2:
-                        return inlineValueProp.vector2Value.ToString();
-                    case SerializedPropertyType.Vector3:
-                        return inlineValueProp.vector3Value.ToString();
-                    case SerializedPropertyType.ObjectReference:
-                        return inlineValueProp.objectReferenceValue ? inlineValueProp.objectReferenceValue.name : "null";
-                    default:
-                        return $"({inlineValueProp.propertyType})";
-                }
-            }
-
-            // Reference Mode
-            UnityEngine.Object variableObj = variableProp.objectReferenceValue;
-            if (variableObj == null) return "null";
-
-            Type variableType = variableObj.GetType();
-
-            if (!cachedValueProps.TryGetValue(variableType, out PropertyInfo valueProp))
-            {
-                valueProp = variableType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
-                cachedValueProps[variableType] = valueProp;
-            }
-
-            if (valueProp != null)
-            {
-                object value = valueProp.GetValue(variableObj);
-                return value?.ToString() ?? "null";
-            }
-
-            return "(Value not accessible)";
-        }
 
         private string GetResolvedTypeName(SerializedProperty property)
         {

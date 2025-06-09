@@ -302,24 +302,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerName:
     mode: 0
-    inlineValue: assd
+    inlineValue: Player
     variable: {fileID: 0}
   playerHealth:
     mode: 0
-    inlineValue: 2.29
+    inlineValue: 5.66
     variable: {fileID: 11400000, guid: 9d9277ef1788d82478b0ef2d8f595aac, type: 2}
   playerDamage:
     mode: 0
-    inlineValue: 0
+    inlineValue: 0.9
     variable: {fileID: 0}
   playerLives:
     mode: 0
-    inlineValue: 3
+    inlineValue: 75
     variable: {fileID: 0}
   playerPosition:
     mode: 1
     inlineValue: {x: 0, y: 0, z: 0}
     variable: {fileID: 11400000, guid: 00ff12e1eb68ba04e8f91483357bc4bc, type: 2}
+  weapons:
+    mode: 0
+    inlineValue: 0
+    variable: {fileID: 0}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0

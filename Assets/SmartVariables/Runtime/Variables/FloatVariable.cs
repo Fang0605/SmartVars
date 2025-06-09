@@ -1,7 +1,10 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "SmartVariables/Float")]
-public class FloatVariable : SmartVariable<float>
+namespace SmartVars.Variables
 {
+    [CreateAssetMenu(menuName = "SmartVariables/Float")]
+    public class FloatVariable : SmartVariable<float>
+    {
 
+    }
 }

@@ -1,7 +1,10 @@
 using UnityEngine;
-
-[CreateAssetMenu(menuName ="SmartVariables/Int")]
-public class IntVariable : SmartVariable<int>
+namespace SmartVars.Variables
 {
 
+    [CreateAssetMenu(menuName = "SmartVariables/Int")]
+    public class IntVariable : SmartVariable<int>
+    {
+
+    }
 }

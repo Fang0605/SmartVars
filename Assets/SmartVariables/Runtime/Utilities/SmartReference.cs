@@ -1,38 +1,42 @@
 using System;
 using UnityEngine;
 
-[System.Serializable]
-public class SmartReference<T>
+namespace SmartVars.Utilities
 {
-    [SerializeField] private ValueSourceMode mode = ValueSourceMode.Inline;
-
-    [SerializeField] private T inlineValue;
-
-    [SerializeField] private SmartVariable<T> variable;
-
-    [NonSerialized]
-    public Action<T> OnInlineValueChanged;
-
-    public T Value
+    [System.Serializable]
+    public class SmartReference<T>
     {
-        get => mode == ValueSourceMode.Inline? inlineValue : variable.Value;
-        set
+        [SerializeField] private ValueSourceMode mode = ValueSourceMode.Inline;
+
+        [SerializeField] private T inlineValue;
+
+        [SerializeField] private SmartVariable<T> variable;
+
+        [NonSerialized]
+        public Action<T> OnInlineValueChanged;
+
+        public T Value
         {
-            if(mode == ValueSourceMode.Inline)
+            get => mode == ValueSourceMode.Inline ? inlineValue : variable.Value;
+            set
             {
-                if(!Equals(inlineValue, value))
+                if (mode == ValueSourceMode.Inline)
                 {
-                    inlineValue = value;
-                    OnInlineValueChanged?.Invoke(value);
+                    if (!Equals(inlineValue, value))
+                    {
+                        inlineValue = value;
+                        OnInlineValueChanged?.Invoke(value);
+                    }
                 }
-            }  
-            else if(variable != null)
-                variable.Value = value;
+                else if (variable != null)
+                    variable.Value = value;
+            }
         }
+
+        public bool IsUsingInlineValue => mode == ValueSourceMode.Inline;
+
+        public ValueSourceMode Mode => mode;
+        public SmartVariable<T> Variable => variable;
     }
 
-    public bool IsUsingInlineValue => mode == ValueSourceMode.Inline;
-
-    public ValueSourceMode Mode => mode;
-    public SmartVariable<T> Variable => variable;
 }

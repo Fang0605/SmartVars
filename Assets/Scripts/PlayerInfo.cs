@@ -1,4 +1,6 @@
 using UnityEngine;
+using SmartVars.Attributes;
+using SmartVars.Utilities;
 
 public class PlayerInfo : MonoBehaviour
 {

@@ -2,11 +2,13 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class SmartVariablePreferences : MonoBehaviour
+namespace SmartVars.Preferences
 {
-    private const string Prefix = "SmartVariable_Color_";
+    public class SmartVariablePreferences : MonoBehaviour
+    {
+        private const string Prefix = "SmartVariable_Color_";
 
-    private static readonly Dictionary<string, Color> defaultColors = new()
+        private static readonly Dictionary<string, Color> defaultColors = new()
     {
         { "Float", new Color(0.4f, 0.6f, 1f) },
         { "Integer", new Color(1f, 0.65f, 0.2f) },
@@ -18,42 +20,44 @@ public class SmartVariablePreferences : MonoBehaviour
         { "Unknown", new Color(0.7f, 0.7f, 0.7f) }
     };
 
-    public static Color GetColor(string type)
-    {
-        string key = Prefix + type;
-        if (EditorPrefs.HasKey(key))
+        public static Color GetColor(string type)
         {
-            ColorUtility.TryParseHtmlString(EditorPrefs.GetString(key), out var c);
-            return c;
+            string key = Prefix + type;
+            if (EditorPrefs.HasKey(key))
+            {
+                ColorUtility.TryParseHtmlString(EditorPrefs.GetString(key), out var c);
+                return c;
+            }
+
+            return defaultColors.TryGetValue(type, out var color) ? color : defaultColors["Unknown"];
         }
 
-        return defaultColors.TryGetValue(type, out var color) ? color : defaultColors["Unknown"];
-    }
-
-    public static void SetColor(string type, Color color)
-    {
-        EditorPrefs.SetString(Prefix + type, $"#{ColorUtility.ToHtmlStringRGBA(color)}");
-    }
-
-    [SettingsProvider]
-    public static SettingsProvider CreatePreferencesGUI()
-    {
-        return new SettingsProvider("Preferences/Smart Variables", SettingsScope.User)
+        public static void SetColor(string type, Color color)
         {
-            label = "Smart Variables",
-            guiHandler = (searchContext) =>
+            EditorPrefs.SetString(Prefix + type, $"#{ColorUtility.ToHtmlStringRGBA(color)}");
+        }
+
+        [SettingsProvider]
+        public static SettingsProvider CreatePreferencesGUI()
+        {
+            return new SettingsProvider("Preferences/Smart Variables", SettingsScope.User)
             {
-                GUILayout.Label("Type Colors", EditorStyles.boldLabel);
-
-                foreach (var entry in defaultColors)
+                label = "Smart Variables",
+                guiHandler = (searchContext) =>
                 {
-                    Color current = GetColor(entry.Key);
-                    Color newColor = EditorGUILayout.ColorField(ObjectNames.NicifyVariableName(entry.Key), current);
+                    GUILayout.Label("Type Colors", EditorStyles.boldLabel);
 
-                    if (newColor != current)
-                        SetColor(entry.Key, newColor);
+                    foreach (var entry in defaultColors)
+                    {
+                        Color current = GetColor(entry.Key);
+                        Color newColor = EditorGUILayout.ColorField(ObjectNames.NicifyVariableName(entry.Key), current);
+
+                        if (newColor != current)
+                            SetColor(entry.Key, newColor);
+                    }
                 }
-            }
-        };
+            };
+        }
     }
+
 }

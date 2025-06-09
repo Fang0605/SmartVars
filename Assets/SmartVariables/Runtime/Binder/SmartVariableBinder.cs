@@ -1,27 +1,32 @@
 using UnityEngine;
+using SmartVars.Utilities;
 
-public abstract class SmartVariableBinder<T> : MonoBehaviour
+namespace SmartVars
 {
-    [SerializeField] protected SmartReference<T> source;
-
-    protected virtual void OnEnable()
+    public abstract class SmartVariableBinder<T> : MonoBehaviour
     {
-        if (source != null)
-            source.OnInlineValueChanged += OnValueChanged;
+        [SerializeField] protected SmartReference<T> source;
 
-        UpdateUI(source != null ? source.Value : default);
+        protected virtual void OnEnable()
+        {
+            if (source != null)
+                source.OnInlineValueChanged += OnValueChanged;
+
+            UpdateUI(source != null ? source.Value : default);
+        }
+
+        protected virtual void OnDisable()
+        {
+            if (source != null)
+                source.OnInlineValueChanged -= OnValueChanged;
+        }
+
+        protected void OnValueChanged(T newValue)
+        {
+            UpdateUI(newValue);
+        }
+
+        protected abstract void UpdateUI(T newValue);
     }
 
-    protected virtual void OnDisable()
-    {
-        if (source != null)
-            source.OnInlineValueChanged -= OnValueChanged;
-    }
-
-    protected void OnValueChanged(T newValue)
-    {
-        UpdateUI(newValue);
-    }
-
-    protected abstract void UpdateUI(T newValue);
 }

@@ -1,6 +1,10 @@
-
-public enum ValueSourceMode
+namespace SmartVars.Utilities
 {
-    Inline,
-    Reference
+
+    public enum ValueSourceMode
+    {
+        Inline,
+        Reference
+    }
+
 }

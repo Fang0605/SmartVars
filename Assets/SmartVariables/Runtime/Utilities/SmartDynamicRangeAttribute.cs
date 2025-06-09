@@ -1,15 +1,18 @@
 using System;
 using UnityEngine;
-
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
-public class SmartDynamicRangeAttribute : PropertyAttribute
+namespace SmartVars.Attributes
 {
-    public string MinField { get; }
-    public string MaxField { get; }
 
-    public SmartDynamicRangeAttribute(string minFieldName, string maxFieldName)
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
+    public class SmartDynamicRangeAttribute : PropertyAttribute
     {
-        MinField = minFieldName;
-        MaxField = maxFieldName;
+        public string MinField { get; }
+        public string MaxField { get; }
+
+        public SmartDynamicRangeAttribute(string minFieldName, string maxFieldName)
+        {
+            MinField = minFieldName;
+            MaxField = maxFieldName;
+        }
     }
 }

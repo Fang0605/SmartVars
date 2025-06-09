@@ -1,13 +1,17 @@
 using UnityEngine;
-
-public class SmartRangeAttribute : PropertyAttribute
+namespace SmartVars.Attributes
 {
-    public float Min;
-    public float Max;
 
-    public SmartRangeAttribute(float min, float max)
+    public class SmartRangeAttribute : PropertyAttribute
     {
-        Min = min;
-        Max = max;
+        public float Min;
+        public float Max;
+
+        public SmartRangeAttribute(float min, float max)
+        {
+            Min = min;
+            Max = max;
+        }
     }
+
 }

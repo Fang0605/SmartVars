@@ -10,7 +10,7 @@ public class PlayerInfo : MonoBehaviour
     [SerializeField] private SmartReference<float> playerHealth;
 
     private float minDamage = 0, maxDamage = 10;
-    [SmartDynamicRange(nameof(minDamage),nameof(maxDamage))] 
+    [SmartDynamicRange(nameof(minDamage), nameof(maxDamage))]
     [SerializeField] private SmartReference<float> playerDamage;
 
     [SerializeField] private SmartReference<int> playerLives;

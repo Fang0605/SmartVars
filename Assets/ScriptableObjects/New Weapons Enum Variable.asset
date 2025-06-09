@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae3b0f3fbaa75d949aff4cdd37da64cd, type: 3}
   m_Name: New Weapons Enum Variable
   m_EditorClassIdentifier: 
-  value: 0
+  value: 1
   defaultValue: 0

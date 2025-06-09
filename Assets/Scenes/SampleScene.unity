@@ -305,7 +305,7 @@ MonoBehaviour:
     inlineValue: Player
     variable: {fileID: 0}
   playerHealth:
-    mode: 0
+    mode: 1
     inlineValue: 5.66
     variable: {fileID: 11400000, guid: 9d9277ef1788d82478b0ef2d8f595aac, type: 2}
   playerDamage:
@@ -321,9 +321,9 @@ MonoBehaviour:
     inlineValue: {x: 0, y: 0, z: 0}
     variable: {fileID: 11400000, guid: 00ff12e1eb68ba04e8f91483357bc4bc, type: 2}
   weapons:
-    mode: 0
-    inlineValue: 0
-    variable: {fileID: 0}
+    mode: 1
+    inlineValue: 1
+    variable: {fileID: 11400000, guid: bbdc54a041d107a408f83bca7bba517a, type: 2}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0

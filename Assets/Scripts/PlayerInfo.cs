@@ -21,9 +21,3 @@ public class PlayerInfo : MonoBehaviour
 
 }
 
-public enum Weapons
-{
-    Fist,
-    Sword,
-    Gun
-}

@@ -25,7 +25,6 @@ public class SmartReferenceDrawer : PropertyDrawer
         float spacing = EditorGUIUtility.standardVerticalSpacing;
 
         string friendlyType = GetResolvedTypeName(property);
-        Debug.Log($"Type key for color lookup: '{friendlyType}'");
         Color boxColor = SmartVariablePreferences.GetColor(friendlyType);
 
         float boxPadding = 4f;
@@ -37,7 +36,8 @@ public class SmartReferenceDrawer : PropertyDrawer
         // Label
         string resolvedLabel = $"{label.text} ({GetResolvedTypeName(property)})";
         Rect labelRect = new Rect(position.x + boxPadding, position.y + boxPadding, position.width, lineHeight);
-        EditorGUI.LabelField(labelRect, new GUIContent(resolvedLabel));
+        // Draw attributes like [Tooltip], [Header], etc.
+        DrawPropertyAttributes(position, property, label);
 
         // Value mode dropdown
         Rect fieldRect = new Rect(labelRect.x, labelRect.y + lineHeight + spacing, labelRect.width, lineHeight);
@@ -48,7 +48,16 @@ public class SmartReferenceDrawer : PropertyDrawer
         // Inline or reference input
         if ((ValueSourceMode)modeProp.enumValueIndex == ValueSourceMode.Inline)
         {
-            EditorGUI.PropertyField(fieldRect, inlineValueProp, new GUIContent("Inline Value"));
+            SmartRangeAttribute range = fieldInfo.GetCustomAttribute<SmartRangeAttribute>();
+
+            if (range != null && inlineValueProp.propertyType == SerializedPropertyType.Float)
+            {
+                inlineValueProp.floatValue = EditorGUI.Slider(fieldRect, "Inline Value", inlineValueProp.floatValue, range.Min, range.Max);
+            }
+            else
+            {
+                EditorGUI.PropertyField(fieldRect, inlineValueProp, new GUIContent("Inline Value"));
+            }
         }
         else
         {
@@ -83,6 +92,49 @@ public class SmartReferenceDrawer : PropertyDrawer
         }
 
         return height + 8f; // padding
+    }
+
+    private void DrawPropertyAttributes(Rect position, SerializedProperty property, GUIContent label)
+    {
+        FieldInfo field = GetFieldInfoFromProperty(property);
+
+        if (field == null)
+        {
+            EditorGUI.LabelField(position, label);
+            return;
+        }
+
+        var attributes = field.GetCustomAttributes<PropertyAttribute>(true);
+
+        float yOffset = 0f;
+        foreach (var attr in attributes)
+        {
+            if (attr is HeaderAttribute header)
+            {
+                //var headerRect = new Rect(position.x, position.y + yOffset, position.width, EditorGUIUtility.singleLineHeight);
+                //EditorGUI.LabelField(headerRect, header.header, EditorStyles.boldLabel);
+                //yOffset += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+            }
+            else if (attr is SpaceAttribute space)
+            {
+                yOffset += space.height;
+            }
+            else if (attr is TooltipAttribute tooltip)
+            {
+                label.tooltip = tooltip.tooltip;
+            }
+            // Add handling for other attributes as needed
+        }
+
+        var labelRect = new Rect(position.x, position.y + yOffset, position.width, EditorGUIUtility.singleLineHeight);
+        EditorGUI.LabelField(labelRect, label);
+    }
+
+    private FieldInfo GetFieldInfoFromProperty(SerializedProperty property)
+    {
+        var type = property.serializedObject.targetObject.GetType();
+        var field = type.GetField(property.name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+        return field;
     }
 
     private static Dictionary<Type, PropertyInfo> cachedValueProps = new();

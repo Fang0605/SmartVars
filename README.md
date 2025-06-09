@@ -1,4 +1,4 @@
-SmartVars is a lightweight and flexible variable system for Unity that supports both inline values and ScriptableObject references — all in one property.
+SmartVars is a lightweight and flexible variable system for Unity that supports both inline values and ScriptableObject references, all in one property.
 
 It’s built with simplicity and clarity in mind, making it easy to switch between local and shared values right in the Inspector. Designed to help you write cleaner, more modular code without sacrificing usability.
 

@@ -22,3 +22,5 @@ Cleaner logic for data-driven or ScriptableObject-based architecture
 
 Prototyping with inline values, then swapping to shared references later
 
+![Image](https://github.com/user-attachments/assets/3b7b8991-aca4-4d90-b1c4-d7c0f380a778)
+![Image](https://github.com/user-attachments/assets/52cf6652-47f4-4b78-b83a-56eac38bfb28)

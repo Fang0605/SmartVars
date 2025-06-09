@@ -111,6 +111,7 @@ namespace SmartVars.Edtior
                     // Get the serialized object of the referenced SmartVariable
                     SerializedObject smartVarSO = new SerializedObject(variableProp.objectReferenceValue);
                     SerializedProperty valueProp = smartVarSO.FindProperty("value");
+                    SerializedProperty defaultValueProp = smartVarSO.FindProperty("defaultValue");
 
                     if (valueProp != null)
                     {
@@ -119,6 +120,15 @@ namespace SmartVars.Edtior
                         if (EditorGUI.EndChangeCheck())
                         {
                             smartVarSO.ApplyModifiedProperties();
+                        }
+
+                        fieldRect.y += lineHeight + spacing;
+
+                        if (defaultValueProp != null)
+                        {
+                            GUI.enabled = false;
+                            EditorGUI.PropertyField(fieldRect, defaultValueProp, new GUIContent("Default Value"));
+                            GUI.enabled = true;
                         }
                     }
                     else
@@ -135,16 +145,24 @@ namespace SmartVars.Edtior
             SerializedProperty modeProp = property.FindPropertyRelative("mode");
             SerializedProperty variableProp = property.FindPropertyRelative("variable");
 
-            float height = EditorGUIUtility.singleLineHeight * 4 + EditorGUIUtility.standardVerticalSpacing * 3;
+            float baseHeight = EditorGUIUtility.singleLineHeight * 4 + EditorGUIUtility.standardVerticalSpacing * 3;
             bool isReference = (ValueSourceMode)modeProp.enumValueIndex == ValueSourceMode.Reference;
             bool isNull = variableProp.objectReferenceValue == null;
 
-            if (isReference && isNull)
+            if (isReference)
             {
-                height += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+                if (isNull)
+                {
+                    baseHeight += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+                }
+                else
+                {
+                    // Add extra line for default value
+                    baseHeight += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+                }
             }
 
-            return height + 8f; // padding
+            return baseHeight + 8f; // padding
         }
 
         private void DrawPropertyAttributes(Rect position, SerializedProperty property, GUIContent label)

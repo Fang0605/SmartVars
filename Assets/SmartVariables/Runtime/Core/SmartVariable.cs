@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 
 public abstract class SmartVariable<T> : ScriptableObject
 {
@@ -8,7 +8,7 @@ public abstract class SmartVariable<T> : ScriptableObject
 
     [SerializeField] private T defaultValue;
 
-    public UnityEvent<T> OnValueChanged = new UnityEvent<T>();
+    public Action<T> OnValueChanged;
 
     public virtual T Value
     {

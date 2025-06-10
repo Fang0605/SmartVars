@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "com.pabgames.smartvars": "file:C:/Users/My PC/Desktop/SmartVariables",
     "com.unity.ai.navigation": "2.0.5",
     "com.unity.collab-proxy": "2.8.2",
     "com.unity.ide.rider": "3.0.31",
